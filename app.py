@@ -74,11 +74,6 @@ def scrape():
                             core_technologies_list]
 
     # Store all the div containers with a class of zyno card
-    # works for all tab
-    # company_cards_div = soup.find_all(
-    #     'div', class_='js-company-item js-advanced-search-item box-view-item')
-
-    # Store all the div containers with a class of zyno card
     # works for recently updated tab
     company_cards_div = soup.find_all(
         'div', class_='js-company-item js-advanced-search-item')
@@ -99,22 +94,6 @@ def scrape():
         except:
             url = not_found
         page_url_list.append(url)
-
-        # worked for all tab
-
-        # # Get the business model
-        # try:
-        #     business_model = container.find('div', class_='right').text
-        # except:
-        #     business_model = not_found
-        # business_model_list.append(business_model)
-
-        # # Get the year founded
-        # try:
-        #     year_founded = container.find('span', class_='bold-900').text.strip()
-        # except:
-        #     year_founded = not_found
-        # year_founded_list.append(year_founded)
 
     # Iterate and search in the specific page for every company found
     print("Pages")
@@ -196,26 +175,6 @@ def scrape():
         except:
             verticals_list.append(not_found)
 
-        # try:
-        #     if(company_profile_card.findAll("div", class_="item-bottom")[4].text == "RAISED"):
-        #         funds_raised_list.append(company_profile_card.findAll(
-        #             "div", class_="metadata-description")[4].text)
-        #         product_stage_list.append(company_profile_card.findAll(
-        #             "div", class_="metadata-description")[5].text)
-        #     else:
-        #         funds_raised_list.append(not_found)
-        #         product_stage_list.append(company_profile_card.findAll(
-        #             "div", class_="metadata-description")[4].text)
-        # except:
-        #     funds_raised_list.append(not_found)
-        #     product_stage_list.append(not_found)
-
-        # Get product stage
-        # try:
-        #     product_stage_list.append(company_profile_card.findAll("div", class_="metadata-description")[4].text)
-        # except:
-        #     product_stage_list.append(not_found)
-
         # Collet and get team Linkedin profiles    
         try:
             team_members = []
@@ -271,6 +230,6 @@ def scrape():
     df.columns = headers_for_excel
 
     # Create excel spreadsheet
-    df.to_excel(excel_writer="result.xlsx")
+    df.to_excel(excel_writer="results/excel/result.xlsx")
 
     print("Done")
