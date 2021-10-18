@@ -4,34 +4,19 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import numpy as np
-import datetime
 from tqdm import tqdm
 import time
 
-def scrape():
-    # Get current year for search
-    current_year = int(datetime.datetime.now().year)
+from utils import get_SNC_url
+
+def scrape():   
 
     # Spoofing the headers we send along with our requests to make it look like we're a legitimate browser
     headers = requests.utils.default_headers()
     headers.update(
         {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0'})
 
-    # url = "https://finder.startupnationcentral.org/startups/search?tab=all&list_1_action=and&list_2_action=and&list_3_action" \
-    #       "=and&list_4_action=and&list_5_action=and&list_6_action=and&list_7_action=and&list_8_action=and&list_9_action=and&" \
-    #       "list_10_action=and&list_11_action=and&list_12_action=and&list_13_action=and&list_14_action=and&list_15_action=and" \
-    #       "&list_16_action=and&list_17_action=and&list_18_action=and&list_19_action=and&list_20_action=and&funding_stage=Boo" \
-    #       "tstrapped&funding_stage=Pre-Seed&funding_stage=Seed&founded_from_year=" + str(current_year-1) + "&founded_to_year=" + str(current_year) + "&status=Active&aca" \
-    #       "demia_based=0&time_range_code=2&time_range_from_date=2020-02-27"
-    # url = "https://finder.startupnationcentral.org/startups/search?tab=all&list_1_action=and&list_2_action=and&list_3_action=and&list_4_action=and&list_5_action=and&list_6_action=and&list_7_action=and&list_8_action=and&list_9_action=and&list_10_action=and&list_11_action=and&list_12_action=and&list_13_action=and&list_14_action=and&list_15_action=and&list_16_action=and&list_17_action=and&list_18_action=and&list_19_action=and&list_20_action=and&funding_stage=Bootstrapped&funding_stage=Pre-Seed&funding_stage=Seed&founded_from_year=" + str(current_year-1) + "&founded_to_year=" + str(current_year) + "&status=Active&academia_based=0&time_range_code=2&time_range_from_date=2020-02-27"
-
-    # url = "https://finder.startupnationcentral.org/startups/search?tab=recently_updated&list_1_action=and&list_2_action=and&list_3_action" \
-    #       "=and&list_4_action=and&list_5_action=and&list_6_action=and&list_7_action=and&list_8_action=and&list_9_action=and&" \
-    #       "list_10_action=and&list_11_action=and&list_12_action=and&list_13_action=and&list_14_action=and&list_15_action=and" \
-    #       "&list_16_action=and&list_17_action=and&list_18_action=and&list_19_action=and&list_20_action=and&funding_stage=Boo" \
-    #       "tstrapped&funding_stage=Pre-Seed&funding_stage=Seed&founded_from_year=" + str(current_year-1) + "&founded_to_year=" + str(current_year) + "&status=Active&aca" \
-    #       "demia_based=0&time_range_code=2&time_range_from_date=2020-02-27"
-    url = "https://finder.startupnationcentral.org/startups/search?tab=recently_updated&list_1_action=and&list_2_action=and&list_3_action=and&list_4_action=and&list_5_action=and&list_6_action=and&list_7_action=and&list_8_action=and&list_9_action=and&list_10_action=and&list_11_action=and&list_12_action=and&list_13_action=and&list_14_action=and&list_15_action=and&list_16_action=and&list_17_action=and&list_18_action=and&list_19_action=and&list_20_action=and&funding_stage=Bootstrapped&funding_stage=Pre-Seed&funding_stage=Seed&founded_from_year=" + str(current_year-1) + "&founded_to_year=" + str(current_year) + "&status=Active&academia_based=0&time_range_code=2&time_range_from_date=2020-02-27"
+    url = get_SNC_url()
 
     # Store request.get action
     results = requests.get(url, headers) 
@@ -48,7 +33,6 @@ def scrape():
     # Init empty lists to store data
     name_list = []  # v
     page_url_list = []  # v
-    # link_list = []  # v
     about_list = []  # v
     team_list = []  
     year_founded_list = []  # v
@@ -74,7 +58,6 @@ def scrape():
                             core_technologies_list]
 
     # Store all the div containers with a class of zyno card
-    # works for recently updated tab
     company_cards_div = soup.find_all(
         'div', class_='js-company-item js-advanced-search-item')
 
@@ -101,8 +84,11 @@ def scrape():
         company_url = "https://finder.startupnationcentral.org" + page
         company_specific_results = requests.get(company_url, None)
         specific_soup = BeautifulSoup(company_specific_results.text, "html.parser")
+
         # Get Company Profile so we can get: Employees, Funding stage, Money raised, and Product stage
         company_profile_card = specific_soup.find("div", class_='metadata-wrapper')
+
+        # Get different bars to gain access to data
         side_bar = specific_soup.find(class_="zyno-card-4")
         row_bar = specific_soup.find(class_="row-container space-between js-startup-classification-section w-105")
 
@@ -175,7 +161,7 @@ def scrape():
         except:
             verticals_list.append(not_found)
 
-        # Collet and get team Linkedin profiles    
+        # Collet and get team Linkedin profiles
         try:
             team_members = []
             team_members_soup = specific_soup.find(class_="team-member-cards-wrapper js-team-member-carousel")

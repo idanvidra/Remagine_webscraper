@@ -6,18 +6,41 @@ from email import encoders
 from datetime import date
 import pandas as pd
 
-PASSWORD = "remaginescraper1"
-sender_email = "remaginewebscraper@gmail.com"
-receiver_email = "eze@remagineventures.com"
+from constants import PASSWORD, SENDER_EMAIL, RECEIVER_EMAIL
+
+
+PASSWORD = PASSWORD
+sender_email = SENDER_EMAIL
+receiver_email = RECEIVER_EMAIL
 today = date.today()
 
-def create_basic_html_table():
-    df = pd.read_excel('result.xlsx')
+def get_SNC_url():
+    '''
+    return the url for StartUp Nation Central, recently updated, current year,
+    with pre-seed, seed or bootstreped funding stage
+    '''
+    current_year = get_current_year()
+    url = "https://finder.startupnationcentral.org/startups/search?tab=recently_updated&list_1_action=and&list_2_action=and&list_3_action=and&list_4_action=and&list_5_action=and&list_6_action=and&list_7_action=and&list_8_action=and&list_9_action=and&list_10_action=and&list_11_action=and&list_12_action=and&list_13_action=and&list_14_action=and&list_15_action=and&list_16_action=and&list_17_action=and&list_18_action=and&list_19_action=and&list_20_action=and&funding_stage=Bootstrapped&funding_stage=Pre-Seed&funding_stage=Seed&founded_from_year=" + str(current_year-1) + "&founded_to_year=" + str(current_year) + "&status=Active&academia_based=0&time_range_code=2&time_range_from_date=2020-02-27"
+    return url
 
+def get_current_year():
+    '''
+    return the current year as an int
+    '''
+    return int(date.datetime.now().year)
+
+def create_basic_html_table():
+    '''
+    convert excel file to a basic HTML table file
+    '''
+    df = pd.read_excel('result.xlsx')
     with open('pandas_table.html', 'w') as f:
         f.write(df.to_html())
 
 def create_pretty_html_table():
+    '''
+    convert excel file to a 'pretty' HTML table file
+    '''
     from pretty_html_table import build_table
 
     df = pd.read_excel('result.xlsx')
@@ -28,6 +51,10 @@ def create_pretty_html_table():
         f.write(html_table_blue_light)
 
 def send_email(sender_email, receiver_email, message):
+    '''
+    send email with subject, body, attached file
+    '''
+
     import smtplib
 
     smtpserver = smtplib.SMTP("smtp.gmail.com", 587)
@@ -73,6 +100,9 @@ def send_email(sender_email, receiver_email, message):
     smtpserver.sendmail(sender_email, receiver_email, text)
 
 def default_send_email():
+    '''
+    easy to use send_email() fucntion with preloaded params
+    '''
     send_email(sender_email=sender_email, receiver_email=receiver_email, message=message)
 
 

@@ -2,15 +2,20 @@ class company:
     def __init__(self) -> None:
         name = ""
         page_url = ""
-        link = ""
-        about = ""
-        team_list = []
+        description = ""
+        business_model = ""
         year_founded = ""
-        business_model_list = []
         employees = ""
         funding_stage = ""
         product_stage = ""
         funds_raised = ""
+        company_website = ""
+        tags = ""
+        verticals = ""
+        team = "" 
+        sectors = ""
+        target_industries = ""
+        core_technologies = ""
 
     def to_string(this):
         # Printing
