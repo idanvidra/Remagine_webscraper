@@ -7,9 +7,10 @@ import numpy as np
 from tqdm import tqdm
 import time
 
-from utils import get_SNC_url
+from utils import get_SNC_url, summarize_description
 
-def scrape():   
+
+def scrape():
 
     # Spoofing the headers we send along with our requests to make it look like we're a legitimate browser
     headers = requests.utils.default_headers()
@@ -19,22 +20,23 @@ def scrape():
     url = get_SNC_url()
 
     # Store request.get action
-    results = requests.get(url, headers) 
+    results = requests.get(url, headers)
 
     # Var to assign the method BeautifulSoup to (specifies the desired format)
     # Allows Python to read the components of the page rather than treating it as one long string
     soup = BeautifulSoup(results.text, "html.parser")
 
     # Headers for excel
-    headers_for_excel = ['Name', 'Finder Page', 'Business Model', 'Founding Year', 'Description', 'Number of Employees',
-                        'Funds Raised', 'Funding Stage', 'Product Stage', 'Company Website', 'Tags', 'Target Markets', 
-                        'Sectors', 'Target Industry', 'Core Technologies']
+    headers_for_excel = ['Name', 'Finder Page', 'Business Model', 'Founding Year', 'Description', 'Description Summary', 'Number of Employees',
+                         'Funds Raised', 'Funding Stage', 'Product Stage', 'Company Website', 'Tags', 'Target Markets',
+                         'Sectors', 'Target Industry', 'Core Technologies']
 
     # Init empty lists to store data
     name_list = []  # v
     page_url_list = []  # v
     about_list = []  # v
-    team_list = []  
+    about_summary_list = []
+    team_list = []
     year_founded_list = []  # v
     business_model_list = []  # v
     employees_list = []  # v
@@ -52,10 +54,10 @@ def scrape():
     not_found = '-'
 
     # List of all feature lists
-    list_of_feature_lists = [name_list, page_url_list, business_model_list, year_founded_list, about_list,
-                            employees_list, funds_raised_list, funding_stage_list, product_stage_list, 
-                            company_website_list,tags_list,verticals_list,sectors_list, target_industries_list, 
-                            core_technologies_list]
+    list_of_feature_lists = [name_list, page_url_list, business_model_list, year_founded_list, about_list, about_summary_list,
+                             employees_list, funds_raised_list, funding_stage_list, product_stage_list,
+                             company_website_list, tags_list, verticals_list, sectors_list, target_industries_list,
+                             core_technologies_list]
 
     # Store all the div containers with a class of zyno card
     company_cards_div = soup.find_all(
@@ -83,14 +85,17 @@ def scrape():
     for page in tqdm(page_url_list):
         company_url = "https://finder.startupnationcentral.org" + page
         company_specific_results = requests.get(company_url, None)
-        specific_soup = BeautifulSoup(company_specific_results.text, "html.parser")
+        specific_soup = BeautifulSoup(
+            company_specific_results.text, "html.parser")
 
         # Get Company Profile so we can get: Employees, Funding stage, Money raised, and Product stage
-        company_profile_card = specific_soup.find("div", class_='metadata-wrapper')
+        company_profile_card = specific_soup.find(
+            "div", class_='metadata-wrapper')
 
         # Get different bars to gain access to data
         side_bar = specific_soup.find(class_="zyno-card-4")
-        row_bar = specific_soup.find(class_="row-container space-between js-startup-classification-section w-105")
+        row_bar = specific_soup.find(
+            class_="row-container space-between js-startup-classification-section w-105")
 
         # Get company description
         description = specific_soup.findAll(
@@ -101,53 +106,69 @@ def scrape():
             about_string += current_line
         about_list.append(about_string)
 
+        # Get the summary from AI21 Jurassic model
+        try:
+            description_summary = summarize_description(
+                page_url=page, description=about_string)
+        except:
+            description_summary = not_found
+        about_summary_list.append(description_summary)
+
         # Get the business model
         try:
-            business_model = company_profile_card.find(text="BUSINESS MODEL").parent.parent.find(class_="metadata-description").text
+            business_model = company_profile_card.find(
+                text="BUSINESS MODEL").parent.parent.find(class_="metadata-description").text
         except:
             business_model = not_found
         business_model_list.append(business_model)
 
         # Get the year founded
         try:
-            year_founded = company_profile_card.find(text="FOUNDED").parent.parent.find(class_="metadata-description").text.strip()
+            year_founded = company_profile_card.find(text="FOUNDED").parent.parent.find(
+                class_="metadata-description").text.strip()
         except:
             year_founded = not_found
         year_founded_list.append(year_founded)
 
         # Get number of employees
         try:
-            employees_list.append(company_profile_card.find(text="EMPLOYEES").parent.parent.find(class_="metadata-description").text.strip())
+            employees_list.append(company_profile_card.find(
+                text="EMPLOYEES").parent.parent.find(class_="metadata-description").text.strip())
         except:
             employees_list.append(not_found)
 
         # Get funding stage
         try:
-            funding_stage_list.append(company_profile_card.find(text="FUNDING STAGE").parent.parent.find(class_="metadata-description").text.strip())
+            funding_stage_list.append(company_profile_card.find(
+                text="FUNDING STAGE").parent.parent.find(class_="metadata-description").text.strip())
         except:
             funding_stage_list.append(not_found)
 
         # Get product stage
         try:
-            product_stage_list.append(company_profile_card.find(text="PRODUCT STAGE").parent.parent.find(class_="metadata-description").text.strip())
+            product_stage_list.append(company_profile_card.find(
+                text="PRODUCT STAGE").parent.parent.find(class_="metadata-description").text.strip())
         except:
             product_stage_list.append(not_found)
 
         # Get funding raised so far
         try:
-            funds_raised_list.append(company_profile_card.find(text="RAISED").parent.parent.find(class_="metadata-description").text.strip())
+            funds_raised_list.append(company_profile_card.find(
+                text="RAISED").parent.parent.find(class_="metadata-description").text.strip())
         except:
             funds_raised_list.append(not_found)
-        
+
         # Get company website url
         try:
-            company_website_list.append(side_bar.find(class_="js-external-link-item general-info-regular-text").text.strip())
+            company_website_list.append(side_bar.find(
+                class_="js-external-link-item general-info-regular-text").text.strip())
         except:
             company_website_list.append(not_found)
-        
+
         # Get tags
         try:
-            tags = specific_soup.find(class_="tags-wrapper").findAll(class_="tag-name")
+            tags = specific_soup.find(
+                class_="tags-wrapper").findAll(class_="tag-name")
             tags = ([tag.text for tag in tags])
             tags_list.append(tags)
         except:
@@ -155,7 +176,8 @@ def scrape():
 
         # Get verticals
         try:
-            verticals = specific_soup.findAll(class_="tags-wrapper")[1].findAll('a')
+            verticals = specific_soup.findAll(
+                class_="tags-wrapper")[1].findAll('a')
             verticals = ([vertical.text for vertical in verticals])
             verticals_list.append(verticals)
         except:
@@ -164,7 +186,8 @@ def scrape():
         # Collet and get team Linkedin profiles
         try:
             team_members = []
-            team_members_soup = specific_soup.find(class_="team-member-cards-wrapper js-team-member-carousel")
+            team_members_soup = specific_soup.find(
+                class_="team-member-cards-wrapper js-team-member-carousel")
             for member in team_members_soup.findAll(class_="card-wrapper"):
                 member_name = member.find(class_="card-title").text.strip()
                 member_title = member.find(class_="card-subtitle").text.strip()
@@ -172,7 +195,8 @@ def scrape():
                     member_linkedin_url = member.find('a')['href']
                 except:
                     member_linkedin_url = '-'
-                member_full_credits = (member_name, member_title, member_linkedin_url)
+                member_full_credits = (
+                    member_name, member_title, member_linkedin_url)
                 team_members.append(member_full_credits)
             team_list.append(team_members)
         except:
@@ -180,7 +204,8 @@ def scrape():
 
         # Get sectors
         try:
-            sectors = row_bar.find(lambda tag:tag.name=="div" and "Sector" in tag.text).findAll('a')
+            sectors = row_bar.find(
+                lambda tag: tag.name == "div" and "Sector" in tag.text).findAll('a')
             sectors = ([sector.text.strip() for sector in sectors])
             sectors_list.append(sectors)
         except:
@@ -188,16 +213,20 @@ def scrape():
 
         # Get target industries
         try:
-            target_industries = row_bar.find(lambda tag:tag.name=="div" and "Target Industry" in tag.text).findAll('a')
-            target_industries = ([target_industry.text.strip() for target_industry in target_industries])
+            target_industries = row_bar.find(
+                lambda tag: tag.name == "div" and "Target Industry" in tag.text).findAll('a')
+            target_industries = ([target_industry.text.strip()
+                                 for target_industry in target_industries])
             target_industries_list.append(target_industries)
         except:
             target_industries_list.append(not_found)
 
         # Get core technologies
         try:
-            core_technologies = row_bar.find(lambda tag:tag.name=="div" and "Core Technology" in tag.text).findAll('a')
-            core_technologies = ([core_technology.text.strip() for core_technology in core_technologies])
+            core_technologies = row_bar.find(
+                lambda tag: tag.name == "div" and "Core Technology" in tag.text).findAll('a')
+            core_technologies = ([core_technology.text.strip()
+                                 for core_technology in core_technologies])
             core_technologies_list.append(core_technologies)
         except:
             core_technologies_list.append(not_found)
@@ -209,9 +238,9 @@ def scrape():
             feature_list[index] = [feature_list[index]]
 
     # Stack features and convert features to dataframe
-    data_matrix = np.hstack([name_list, page_url_list, business_model_list, year_founded_list, about_list,
-                            employees_list, funds_raised_list, funding_stage_list, product_stage_list, 
-                            company_website_list,tags_list,verticals_list,sectors_list, target_industries_list, core_technologies_list])
+    data_matrix = np.hstack([name_list, page_url_list, business_model_list, year_founded_list, about_list, about_summary_list,
+                            employees_list, funds_raised_list, funding_stage_list, product_stage_list,
+                            company_website_list, tags_list, verticals_list, sectors_list, target_industries_list, core_technologies_list])
     df = pd.DataFrame(data_matrix)
     df.columns = headers_for_excel
 
@@ -219,3 +248,7 @@ def scrape():
     df.to_excel(excel_writer="results/excel/result.xlsx")
 
     print("Done")
+
+
+if __name__ == "__main__":
+    scrape()
