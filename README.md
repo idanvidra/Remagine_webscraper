@@ -5,7 +5,7 @@ Web scraper that collects startup companies data from Startup Nation Central.
 The data is collected, analyzed by AI21's Jurassic model and sent via email to Remagine.
 # Remagine_webscraper
  
-![Image of KIP Logo](https://github.com/idc-milab/KipInTheater/blob/main/Logo/kip-in-theater-02.png) 
+![Image of Remagine Logo](https://github.com/idanvidra/Remagine_webscraper/blob/main/logo/Remagine%20logo.png) 
 
 This is the Remagine project github.
 The goal is to collect Israeli sturtup data and display to the VC fund.
