@@ -7,7 +7,7 @@ import datetime
 import pandas as pd
 import requests
 
-from constants import SENDER_EMAIL, RECEIVER_EMAIL
+from constants import SENDER_EMAIL, RECEIVER_EMAIL, RESULT_PATH
 from secret import EMAIL_PASSWORD
 
 
@@ -84,7 +84,7 @@ def send_email(sender_email, receiver_email, message):
     # Add body to email
     message.attach(MIMEText(body, "plain"))
 
-    filename = "result.xlsx"
+    filename = RESULT_PATH
 
     # Open PDF file in binary mode
     with open(filename, "rb") as attachment:
