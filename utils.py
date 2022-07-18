@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 
 from constants import SENDER_EMAIL, RECEIVER_EMAIL, RESULT_PATH
-from secret import EMAIL_PASSWORD
+from secret import EMAIL_PASSWORD, APP_PASSWORD
 
 
 PASSWORD = EMAIL_PASSWORD
@@ -70,7 +70,8 @@ def send_email(sender_email, receiver_email, message):
     smtpserver.ehlo()
     smtpserver.starttls()
     smtpserver.ehlo()
-    smtpserver.login(sender_email, PASSWORD)
+    # smtpserver.login(sender_email, PASSWORD)
+    smtpserver.login(sender_email, APP_PASSWORD)
 
     subject = "Startup Nation Central Scraping"
     body = "Attached is the Startup Nation Central Scraping from " + str(today)
